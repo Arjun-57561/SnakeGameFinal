@@ -1,66 +1,67 @@
-public class GameManager {
+import java.util.Random;
+
+public class GameManager implements GameInterface {
+    private final int WIDTH = 600, HEIGHT = 600, TILE_SIZE = 25;
     private Snake snake;
-    private int foodX, foodY;
-    private int score;
-    private int highScore;
-    private boolean running;
+    private int foodX, foodY, score = 0, highScore = 0;
+    private boolean running = false;
+    private Random random = new Random();
     private DataManager dataManager; // Reference to DataManager for database operations
 
     public GameManager() {
-        snake = new Snake(100); // Initialize the snake with a max size of 100
-        score = 0;
-        running = false;
+        snake = new Snake((WIDTH * HEIGHT) / (TILE_SIZE * TILE_SIZE));
         dataManager = new DataManager(); // Initialize DataManager
-
+        
         // Fetch high score from the database (example player name "Player1")
         highScore = dataManager.getHighScore(getPlayerId("Player1"));
+        startGame();
     }
 
-    // Start the game
+    @Override
     public void startGame() {
-        snake.reset();
-        score = 0;
-        running = true;
+        snake = new Snake((WIDTH * HEIGHT) / (TILE_SIZE * TILE_SIZE));
         spawnFood();
+        running = true;
+        score = 0;
     }
 
-    // Move the snake and check game conditions
+    public void spawnFood() {
+        foodX = random.nextInt(WIDTH / TILE_SIZE) * TILE_SIZE;
+        foodY = random.nextInt(HEIGHT / TILE_SIZE) * TILE_SIZE;
+    }
+
+    @Override
     public void move() {
-        if (running) {
-            snake.move(); // Move the snake
-            if (checkFood()) {
-                score += 10;
-                spawnFood();
-                snake.grow(); // Grow the snake when it eats the food
-            }
-            checkCollision(); // Check for collision with the wall or itself
-        }
+        snake.move();
+        if (snake.getX()[0] < 0) snake.getX()[0] = WIDTH - TILE_SIZE;
+        if (snake.getX()[0] >= WIDTH) snake.getX()[0] = 0;
+        if (snake.getY()[0] < 0) snake.getY()[0] = HEIGHT - TILE_SIZE;
+        if (snake.getY()[0] >= HEIGHT) snake.getY()[0] = 0;
     }
 
-    // Check if the snake has eaten the food
-    public boolean checkFood() {
-        if (snake.getHeadX() == foodX && snake.getHeadY() == foodY) {
-            return true;
-        }
-        return false;
-    }
-
-    // Check for collisions with the snake's body or the wall
+    @Override
     public void checkCollision() {
-        // Check if the snake collides with itself
         for (int i = 1; i < snake.getLength(); i++) {
             if (snake.getX()[0] == snake.getX()[i] && snake.getY()[0] == snake.getY()[i]) {
-                running = false;
-                saveScore(); // Save the score to the database if collision occurs
-                break;
+                gameOver();
             }
         }
+    }
 
-        // Check if the snake collides with the walls
-        if (snake.getX()[0] < 0 || snake.getX()[0] >= 600 || snake.getY()[0] < 0 || snake.getY()[0] >= 600) {
-            running = false;
-            saveScore(); // Save the score to the database if collision occurs
+    @Override
+    public void checkFood() {
+        if (snake.getX()[0] == foodX && snake.getY()[0] == foodY) {
+            snake.grow();
+            score += 10;
+            highScore = Math.max(score, highScore);
+            spawnFood();
         }
+    }
+
+    @Override
+    public void gameOver() { 
+        running = false; 
+        saveScore(); // Save the score to the database when the game is over
     }
 
     // Save the current score to the database
@@ -79,34 +80,10 @@ public class GameManager {
         return dataManager.getOrCreatePlayerId(playerName);
     }
 
-    // Spawn food at random location
-    private void spawnFood() {
-        foodX = (int) (Math.random() * 20) * 25;
-        foodY = (int) (Math.random() * 20) * 25;
-    }
-
-    // Getters
-    public int getScore() {
-        return score;
-    }
-
-    public int getHighScore() {
-        return highScore;
-    }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    public int getFoodX() {
-        return foodX;
-    }
-
-    public int getFoodY() {
-        return foodY;
-    }
-
-    public Snake getSnake() {
-        return snake;
-    }
+    public boolean isRunning() { return running; }
+    public int getFoodX() { return foodX; }
+    public int getFoodY() { return foodY; }
+    public int getScore() { return score; }
+    public int getHighScore() { return highScore; }
+    public Snake getSnake() { return snake; }
 }
