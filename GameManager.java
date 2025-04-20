@@ -1,3 +1,4 @@
+
 import java.util.Random;
 
 public class GameManager implements GameInterface {
@@ -87,3 +88,4 @@ public class GameManager implements GameInterface {
     public int getHighScore() { return highScore; }
     public Snake getSnake() { return snake; }
 }
+
