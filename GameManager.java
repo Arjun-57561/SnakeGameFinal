@@ -1,3 +1,4 @@
+
 import java.util.Random;
 
 public class GameManager implements GameInterface {
@@ -6,9 +7,14 @@ public class GameManager implements GameInterface {
     private int foodX, foodY, score = 0, highScore = 0;
     private boolean running = false;
     private Random random = new Random();
+    private DataManager dataManager; // Reference to DataManager for database operations
 
     public GameManager() {
         snake = new Snake((WIDTH * HEIGHT) / (TILE_SIZE * TILE_SIZE));
+        dataManager = new DataManager(); // Initialize DataManager
+        
+        // Fetch high score from the database (example player name "Player1")
+        highScore = dataManager.getHighScore(getPlayerId("Player1"));
         startGame();
     }
 
@@ -54,7 +60,26 @@ public class GameManager implements GameInterface {
     }
 
     @Override
-    public void gameOver() { running = false; }
+    public void gameOver() { 
+        running = false; 
+        saveScore(); // Save the score to the database when the game is over
+    }
+
+    // Save the current score to the database
+    public void saveScore() {
+        int playerId = getPlayerId("Player1");
+        dataManager.saveScore(playerId, score);
+
+        // Update high score if the current score is higher
+        if (score > highScore) {
+            highScore = score;
+        }
+    }
+
+    // Get player ID from the database
+    private int getPlayerId(String playerName) {
+        return dataManager.getOrCreatePlayerId(playerName);
+    }
 
     public boolean isRunning() { return running; }
     public int getFoodX() { return foodX; }
