@@ -88,7 +88,7 @@ public class DataManager {
             throw new PlayerRegistrationException("Database error during player registration: " + e.getMessage(), e);
         }
         
-        throw new PlayerRegistrationException("Unknown error during player registration");
+        // throw new PlayerRegistrationException("Unknown error during player registration");
     }
 
     // Save score with custom exception
