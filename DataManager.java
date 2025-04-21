@@ -4,8 +4,10 @@ public class DataManager {
 
     // Database connection details
     private static final String DB_URL = "jdbc:mysql://localhost:3306/snake_game_db";
-    private static final String DB_USER = "root"; // MySQL username
-    private static final String DB_PASSWORD = "Jhotika@####"; // MySQL password
+
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "Jhotika@####";
+
 
     private Connection conn; // JDBC connection object
 
