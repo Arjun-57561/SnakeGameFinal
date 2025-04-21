@@ -1,5 +1,5 @@
 public interface GameInterface {
-    void startGame();
+    void startGame() throws GameInitializationException;
     void move();
     void checkCollision();
     void checkFood();
